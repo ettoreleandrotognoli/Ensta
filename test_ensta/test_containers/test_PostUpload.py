@@ -4,7 +4,7 @@ from pathlib import Path
 from ensta.containers import PostUpload
 
 
-SUCCESS = Path('./').joinpath('samples/post/success.json')
+SUCCESS = Path('./').joinpath('test_ensta/samples/post/success.json')
 
 
 class PostUploadTest(TestCase):

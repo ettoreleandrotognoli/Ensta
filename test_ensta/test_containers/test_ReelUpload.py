@@ -4,7 +4,7 @@ from pathlib import Path
 from ensta.containers import ReelUpload
 
 
-SUCCESS = Path('./').joinpath('samples/reel/success.json')
+SUCCESS = Path('./').joinpath('test_ensta/samples/reel/success.json')
 
 
 class ReelUploadTest(TestCase):

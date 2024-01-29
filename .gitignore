@@ -1,3 +1,5 @@
 *.py[cod]
 /ensta-session.txt
 /test.py
+/build
+**.egg-info
