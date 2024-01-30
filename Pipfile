@@ -9,12 +9,12 @@ moviepy = "*"
 cryptography = "*"
 pyotp = "*"
 ntplib = "*"
+pyquery = "*"
 
 [dev-packages]
 
 [requires]
 python_version = "3.11"
-
 
 [scripts]
 test = "python -m unittest discover -s test_ensta/ -t ."
