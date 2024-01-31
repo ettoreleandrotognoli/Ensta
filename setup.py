@@ -1,11 +1,12 @@
 from distutils.core import setup
 from pathlib import Path
 
-version = "5.0.9"
+version = "6.0.0.dev1"
 long_description = (Path(__file__).parent / "README.md").read_text(encoding="utf-8")
 
 setup(
     name="ensta",
+    python_requires=">=3.11",
     packages=["ensta", "ensta.lib", "ensta.containers"],
     version=version,
     license="MIT",
