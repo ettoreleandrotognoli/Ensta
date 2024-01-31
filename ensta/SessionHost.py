@@ -15,6 +15,7 @@ from .containers.Post import Post
 from collections.abc import Generator
 from .containers.ProfileHost import ProfileHost
 from .containers.PrivateInfo import PrivateInfo
+from .containers.PostDetail import PostDetail
 from .containers import (FollowedStatus, UnfollowedStatus, FollowPerson, PostUpload, ReelUpload)
 from .lib import (
     SessionError,
@@ -621,7 +622,7 @@ class SessionHost:
         http_response = self.request_session.get(share_url, headers=request_headers)
         return http_response.text
 
-    def get_post(self, share_url: str):
+    def get_post(self, share_url: str) -> PostDetail:
         parsed_url = urlparse(share_url)
         code = parsed_url.path.removeprefix('/p/').removesuffix('/')
         response_text = self.get_raw_post(share_url)
@@ -640,7 +641,7 @@ class SessionHost:
             for p in search_post(json_data):
                 post.update(p)
         post['comments'] = comments
-        return post
+        return PostDetail.from_data(post)
 
     def get_post_id(self, share_url: str) -> str:
         """

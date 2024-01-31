@@ -1,5 +1,5 @@
 from typing import Any, List
-from .shared import CommentInformTreatment, SharingFrictionInfo
+from .Shared import CommentInformTreatment, SharingFrictionInfo
 from dataclasses import dataclass
 from .BaseRespondeData import BaseRespondeData
 

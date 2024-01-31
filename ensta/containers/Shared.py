@@ -1,6 +1,7 @@
-from typing import Any, List
-from .BaseRespondeData import BaseRespondeData
 from dataclasses import dataclass
+from typing import Any
+
+from .BaseRespondeData import BaseRespondeData
 
 
 @dataclass(frozen=True)
