@@ -16,7 +16,7 @@ def get_list_item_type(list_type: Type):
 def parse_item(raw_value: Any, field_type: Type) -> Any:
     if not isinstance(field_type, type):
         return raw_value
-    elif issubclass(field_type, BaseRespondeData):
+    elif issubclass(field_type, BaseResponseData):
         return field_type.from_data(raw_value)
     elif is_dataclass(field_type):
         return field_type(**raw_value)
@@ -24,7 +24,7 @@ def parse_item(raw_value: Any, field_type: Type) -> Any:
         return raw_value
 
 
-class BaseRespondeData:
+class BaseResponseData:
 
     @classmethod
     def from_data(cls, data) -> Self:

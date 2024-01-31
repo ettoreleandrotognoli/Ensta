@@ -1,14 +1,14 @@
 from typing import List
 from unittest import TestCase
 from dataclasses import dataclass
-from ensta.containers.BaseRespondeData import BaseRespondeData
+from ensta.containers.BaseResponseData import BaseResponseData
 
 
 class BaseResponseDataTest(TestCase):
 
     def test_parse_simple_data(self):
         @dataclass
-        class SimpleDataclass(BaseRespondeData):
+        class SimpleDataclass(BaseResponseData):
             a: int
             b: float
             c: str
@@ -31,7 +31,7 @@ class BaseResponseDataTest(TestCase):
             c: str
 
         @dataclass
-        class WithDataclass(BaseRespondeData):
+        class WithDataclass(BaseResponseData):
             dataclass: SimpleDataclass
 
         expected = WithDataclass(dataclass=SimpleDataclass(a=1, b=1., c='1'))
@@ -46,13 +46,13 @@ class BaseResponseDataTest(TestCase):
 
     def test_parse_with_response_data(self):
         @dataclass
-        class SimpleDataclass(BaseRespondeData):
+        class SimpleDataclass(BaseResponseData):
             a: int
             b: float
             c: str
 
         @dataclass
-        class WithDataclass(BaseRespondeData):
+        class WithDataclass(BaseResponseData):
             dataclass: SimpleDataclass
 
         expected = WithDataclass(dataclass=SimpleDataclass(a=1, b=1., c='1'))
@@ -68,7 +68,7 @@ class BaseResponseDataTest(TestCase):
     def test_parse_with_list_any(self):
 
         @dataclass
-        class WithList(BaseRespondeData):
+        class WithList(BaseResponseData):
 
             top_likers: List
 
@@ -82,7 +82,7 @@ class BaseResponseDataTest(TestCase):
     def test_parse_with_list_str(self):
 
         @dataclass
-        class WithList(BaseRespondeData):
+        class WithList(BaseResponseData):
 
             top_likers: List[str]
 
@@ -100,7 +100,7 @@ class BaseResponseDataTest(TestCase):
             username: str
 
         @dataclass
-        class WithList(BaseRespondeData):
+        class WithList(BaseResponseData):
 
             top_likers: List[User]
 

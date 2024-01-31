@@ -1,11 +1,11 @@
-from .BaseRespondeData import BaseRespondeData
+from .BaseResponseData import BaseResponseData
 from .Shared import SharingFrictionInfo
 from typing import Any, List
 from dataclasses import dataclass
 
 
 @dataclass
-class Comment(BaseRespondeData):
+class Comment(BaseResponseData):
     pk: str
     user: Any
     is_covered: bool
@@ -21,13 +21,13 @@ class Comment(BaseRespondeData):
 
 
 @dataclass
-class Caption(BaseRespondeData):
+class Caption(BaseResponseData):
     pk: str
     text: str
 
 
 @dataclass
-class PostDetail(BaseRespondeData):
+class PostDetail(BaseResponseData):
     code: str
     pk: str
     id: str
