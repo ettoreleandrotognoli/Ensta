@@ -1,4 +1,7 @@
 import time
+import tempfile
+from functools import partial
+import mimetypes
 import json
 import random
 import string
@@ -26,11 +29,16 @@ from .lib import (
     ConversionError,
     FileTypeError
 )
+from PIL import Image
 from ensta.lib.Searcher import create_search_obj, search_comments
 from urllib.parse import urlparse, parse_qs
 from pyquery import PyQuery
 
 USERNAME, UID = 0, 1
+
+
+def create_id() -> str:
+    return str(int(time.time() * 1000))
 
 
 class SessionHost:
@@ -858,8 +866,13 @@ class SessionHost:
 
         except JSONDecodeError:
             raise NetworkError("HTTP Response is not a valid JSON.")
-
-    def get_upload_id(self, media_path: str, arg_upload_id: str | None = None) -> str:
+        
+    def upload_photo_and_retrieve_id(
+        self,
+        media_path: str,
+        upload_id: str | None = None,
+        media_type='1'
+    ) -> str:
         """
         Uploads the given media to Instagram's server and returns its unique ID which you can later use to configure single or multiple posts.
         :param media_path: Path to the media file (only jpg & jpeg)
@@ -868,22 +881,23 @@ class SessionHost:
         """
 
         media_path: Path = Path(media_path)
+        mime_type, _ = mimetypes.guess_type(media_path)
 
-        if media_path.suffix not in (".jpg", ".jpeg"):
-            raise FileTypeError(
-                "Only jpg and jpeg image types are allowed to post."
-            )
+        #if media_path.suffix not in (".jpg", ".jpeg"):
+        #    raise FileTypeError(
+        #        "Only jpg and jpeg image types are allowed to post."
+        #    )
 
-        upload_id = arg_upload_id if arg_upload_id is not None else str(int(time.time()) * 1000)
+        upload_id = upload_id if upload_id is not None else create_id()
         waterfall_id = str(uuid4())
-        upload_name = f"{upload_id}_0_{random.randint(1000000000, 9999999999)}"
+        upload_name = f"fb_uploader_{upload_id}"
 
         rupload_params = {
             "retry_context": "{\"num_step_auto_retry\": 0, \"num_reupload\": 0, \"num_step_manual_retry\": 0}",
-            "media_type": "1",
+            "media_type": media_type,
             "xsharing_user_ids": "[]",
             "upload_id": upload_id,
-            "image_compression": json.dumps({"lib_name": "moz", "lib_version": "3.1.m", "quality": 80})
+            #"image_compression": json.dumps({"lib_name": "moz", "lib_version": "3.1.m", "quality": 80})
         }
 
         with open(media_path, "rb") as file:
@@ -894,11 +908,11 @@ class SessionHost:
             "accept-encoding": "gzip",
             "x-instagram-rupload-params": json.dumps(rupload_params),
             "x_fb_photo_waterfall_id": waterfall_id,
-            "x-entity-type": "image/jpeg",
+            "x-entity-type": mime_type,
             "offset": "0",
             "x-entity-name": upload_name,
             "x-entity-length": photo_length,
-            "content-type": "application/octet-stream",
+            "content-type": mime_type,
             "content-length": photo_length
         }
 
@@ -922,32 +936,59 @@ class SessionHost:
 
         except JSONDecodeError:
             raise NetworkError("Response not a valid json.")
+        
+    def get_upload_id(self, media_path: str, upload_id: str | None = None) -> str:
+        mimetype, _ = mimetypes.guess_type(media_path)
+        media_type, _ = mimetype.split('/', 1)
+        upload_methods = {
+            'video' : partial(self.upload_video_and_retrieve_id, auto_thumbnail=0),
+            'image' : self.upload_photo_and_retrieve_id,
+        }
+        def unknown_type(*args,**kwargs):
+            raise Exception(f'Unknown media type {mimetype}: {media_path}')
+        upload_method = upload_methods.get(media_type, unknown_type)
+        return upload_method(media_path, upload_id)
 
-    def __upload_video(self, path: str, arg_upload_id: str | None = None) -> tuple[bool, any, any, any]:
+    def upload_video_and_retrieve_id(
+        self,
+        path: str,
+        upload_id: str | None = None,
+        auto_thumbnail: int | None =None,
+        media_type='2',
+        is_clip_video=False,
+        is_sidecar=False,
+        is_unified_video=False,
+        for_album=False
+    ) -> str:
         video_editor = moviepy.editor.VideoFileClip(path)
 
         path: Path = Path(path)
+        mime_type, _ = mimetypes.guess_type(path)
         waterfall_id = str(uuid4())
 
-        upload_id = arg_upload_id if arg_upload_id is not None else str(int(time.time()) * 1000)
-        upload_name = f"{upload_id}_0_{random.randint(1000000000, 9999999999)}"
+        upload_id = upload_id if upload_id is not None else create_id()
+        upload_name = f"fb_uploader_{upload_id}"
 
         rupload_params = {
-            "is_clips_video": "1",
             "retry_context": "{\"num_step_auto_retry\": 0, \"num_reupload\": 0, \"num_step_manual_retry\": 0}",
-            "media_type": "2",
+            "media_type": media_type,
             "xsharing_user_ids": json.dumps([self.user_id]),
             "upload_id": upload_id,
             "upload_media_duration_ms": str(int(video_editor.duration * 1000)),
             "upload_media_width": str(video_editor.size[0]),
             "upload_media_height": str(video_editor.size[1])
         }
+        
+        rupload_params['is_unified_video'] = '1' if is_unified_video else '0'
+        rupload_params['is_sidecar'] = '1' if is_sidecar else '0'
+        rupload_params['is_clip_video'] = '1' if is_clip_video else '0'
+        rupload_params['for_album'] = for_album
 
         request_headers__get = {
             "accept-encoding": "gzip",
             "x-instagram-rupload-params": json.dumps(rupload_params),
             "x_fb_video_waterfall_id": waterfall_id,
-            "x-entity-type": "video/mp4"
+            "x-entity-type": mime_type
         }
 
         http_response__get = self.request_session.get(
@@ -970,7 +1011,7 @@ class SessionHost:
             "offset": "0",
             "x-entity-name": upload_name,
             "x-entity-length": video_length,
-            "content-type": "application/octet-stream",
+            "content-type": mime_type,
             "content-length": video_length,
             **request_headers__get
         }
@@ -980,17 +1021,22 @@ class SessionHost:
             data=video_data,
             headers=request_headers
         )
-
+        
         try:
             response_json: dict = http_response.json()
-
-            return response_json.get("status", "") == "ok", \
-                video_editor.duration, \
-                video_editor.size[0], \
-                video_editor.size[1]
-
         except JSONDecodeError:
             raise NetworkError("Response not a valid json.")
+        
+        if response_json.get("status", "") != "ok":
+            raise Exception('Error uploading video')
+        
+        if auto_thumbnail is None:
+            return upload_id
+        
+        frame = Image.fromarray(video_editor.get_frame(auto_thumbnail))
+        with tempfile.NamedTemporaryFile(suffix='.jpg') as out:
+            frame.save(out.name, format='JPEG')
+            return self.upload_photo_and_retrieve_id(out.name, upload_id, media_type=media_type)
 
     def upload_photo(
         self,
@@ -1089,7 +1135,7 @@ class SessionHost:
         request_headers: dict = {
             "accept": "*/*",
             "accept-language": "en-US,en;q=0.9",
-            "content-type": "application/x-www-form-urlencoded",
+            "content-type": "application/json; charset=utf-8",
             "dpr": "1.30208",
             "sec-ch-prefers-color-scheme": "dark",
             "sec-ch-ua": self.user_agent,
@@ -1116,7 +1162,7 @@ class SessionHost:
             "archive_only": archive_only,
             "caption": caption,
             "children_metadata": [{"upload_id": upload_id} for upload_id in upload_ids],
-            "client_sidecar_id": str(int(time.time()) * 1000),
+            "client_sidecar_id": create_id(),
             "disable_comments": "1" if disable_comments else "0",
             "like_and_view_counts_disabled": "1" if like_and_view_counts_disabled else "0",
             "source_type": "library"
@@ -1162,15 +1208,13 @@ class SessionHost:
         :return: ReelUpload
         """
 
-        upload_id = str(int(time.time()) * 1000)
+        upload_id = create_id()
 
-        video_success, video_duration, video_width, video_height = self.__upload_video(video_path, upload_id)
+        self.upload_video_and_retrieve_id(video_path, upload_id)
 
-        if not video_success:
-            return False
         if not self.get_upload_id(
                 media_path=thumbnail_path,
-                arg_upload_id=upload_id
+                upload_id=upload_id
         ):
             return False
 
