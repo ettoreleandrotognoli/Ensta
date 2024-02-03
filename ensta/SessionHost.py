@@ -16,7 +16,7 @@ from collections.abc import Generator
 from .containers.ProfileHost import ProfileHost
 from .containers.PrivateInfo import PrivateInfo
 from .containers.PostDetail import PostDetail
-from .containers import (FollowedStatus, UnfollowedStatus, FollowPerson, PostUpload, ReelUpload)
+from .containers import (FollowedStatus, UnfollowedStatus, FollowPerson, PostUpload, ReelUpload, CarouselUpload)
 from .lib import (
     SessionError,
     NetworkError,
@@ -1075,7 +1075,7 @@ class SessionHost:
         archive_only: bool = False,
         disable_comments: bool = False,
         like_and_view_counts_disabled: bool = False,
-    ) -> bool:  # TODO: Implement Return Value
+    ) -> CarouselUpload:
         """
         Creates a single post with multiple photos on your account.
         :param upload_ids: List (Upload IDs of files already uploaded using get_upload_id() method)
@@ -1130,9 +1130,7 @@ class SessionHost:
 
         try:
             response_json: dict = http_response.json()
-
-            return response_json.get("status", "") == "ok"
-
+            return CarouselUpload.from_response_data(response_json)
         except JSONDecodeError:
             raise NetworkError("Response not a valid json.")
 
