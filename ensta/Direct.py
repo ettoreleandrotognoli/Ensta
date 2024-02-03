@@ -30,7 +30,8 @@ class Direct:
         self.session_data = session_data
         self.request_session = requests.Session()
 
-        if proxy is not None: self.request_session.proxies.update(proxy)
+        if proxy is not None:
+            self.request_session.proxies.update(proxy)
 
         session_data_json: dict = json.loads(session_data)
         self.user_id = session_data_json.get("user_id")
@@ -44,8 +45,10 @@ class Direct:
     @property
     def __private_headers(self) -> dict:
 
-        try: mid: str = json.loads(self.session_data).get("mid", "")
-        except JSONDecodeError: mid: str = ""
+        try:
+            mid: str = json.loads(self.session_data).get("mid", "")
+        except JSONDecodeError:
+            mid: str = ""
 
         return {
             "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
@@ -108,8 +111,10 @@ class Direct:
         try:
             response_json: dict = http_response.json()
 
-            if response_json.get("status", "") != "ok": raise NetworkError("Key 'status' not 'ok' in response json.")
-            if "inbox" not in response_json: raise NetworkError("Key 'inbox' not in response json.")
+            if response_json.get("status", "") != "ok":
+                raise NetworkError("Key 'status' not 'ok' in response json.")
+            if "inbox" not in response_json:
+                raise NetworkError("Key 'inbox' not in response json.")
 
             inbox_json: dict = response_json.get("inbox", {})
 
@@ -124,7 +129,8 @@ class Direct:
 
     @staticmethod
     def __parse_inviter(data: dict) -> DirectThreadInviter | None:
-        if data is None: return None
+        if data is None:
+            return None
 
         return DirectThreadInviter(
             user_id=data.get("pk"),
@@ -153,7 +159,8 @@ class Direct:
 
     def __parse_threads(self, data: list[dict]) -> list[DirectThread]:
 
-        if len(data) < 1: return list()
+        if len(data) < 1:
+            return list()
 
         threads: list[DirectThread] = list()
 

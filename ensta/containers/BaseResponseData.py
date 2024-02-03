@@ -7,11 +7,13 @@ from dataclasses import fields, is_dataclass
 def is_list(field_type: Type):
     return get_origin(field_type) == list
 
+
 def get_list_item_type(list_type: Type):
     args = get_args(list_type)
     if len(args) > 0:
         return args[0]
     return Any
+
 
 def parse_item(raw_value: Any, field_type: Type) -> Any:
     if not isinstance(field_type, type):
