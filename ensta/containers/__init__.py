@@ -15,3 +15,4 @@ from .DirectThreadInviter import DirectThreadInviter
 from .DirectThreadLastPermanentItem import DirectThreadLastPermanentItem
 from .ReelUpload import ReelUpload
 from .PostDetail import PostDetail
+from .CarouselUpload import CarouselUpload
