@@ -1,4 +1,5 @@
 import mimetypes
+import tempfile
 from functools import partial, partialmethod
 import json
 import random
