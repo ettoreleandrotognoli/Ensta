@@ -16,3 +16,4 @@ from .DirectThreadLastPermanentItem import DirectThreadLastPermanentItem
 from .ReelUpload import ReelUpload
 from .PostDetail import PostDetail
 from .BaseResponseData import BaseResponseData
+from .CarouselUpload import CarouselUpload
