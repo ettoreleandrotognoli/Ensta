@@ -17,7 +17,7 @@ autopep8 = "*"
 coverage = "*"
 
 [requires]
-python_version = "3.10"
+python_version = "3.11"
 
 [scripts]
 test = "python -m unittest discover -s test_ensta/ -t ."
