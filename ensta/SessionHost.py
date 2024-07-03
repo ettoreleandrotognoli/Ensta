@@ -1144,7 +1144,7 @@ class SessionHost:
 
         try:
             response_json: dict = http_response.json()
-            CarouselUpload.from_response_data(response_json)
+            return CarouselUpload.from_response_data(response_json)
             
         except JSONDecodeError:
             raise NetworkError("Response not a valid json.")
